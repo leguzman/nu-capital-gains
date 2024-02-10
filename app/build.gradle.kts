@@ -42,3 +42,17 @@ tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
 }
+
+tasks.named<Jar>("jar") {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    manifest {
+        attributes(
+            "Main-Class" to "tax.cli.app.App",
+            "Class-Path" to configurations.runtimeClasspath.get().files.joinToString(" ") { "lib/${it.name}" },
+            "Implementation-Version" to project.version
+        )
+    }
+    from({
+        configurations.compileClasspath.get().map { if (it.isDirectory) it else zipTree(it) }
+    })
+}
