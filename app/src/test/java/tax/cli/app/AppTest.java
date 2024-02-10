@@ -13,7 +13,7 @@ import static tax.cli.app.App.main;
 
 class AppTest {
     @Test
-    void appHasAGreeting() {
+    void testMain() {
         System.setIn(new ByteArrayInputStream(
                 """
                         [{"operation":"buy", "unit-cost":10.00, "quantity": 100},{"operation":"sell", "unit-cost":15.00, "quantity": 50},{"operation":"sell", "unit-cost":15.00, "quantity": 50}]
