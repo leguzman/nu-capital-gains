@@ -31,18 +31,18 @@ class AppTest {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         System.setOut(new PrintStream(out));
         main(new String[0]);
-        assertTrue(out.toString().contains("[{\"tax\":0},{\"tax\":0},{\"tax\":0}]"));
-        assertTrue(out.toString().contains("[{\"tax\":0},{\"tax\":10000.00},{\"tax\":0}]"));
-        assertTrue(out.toString().contains("[{\"tax\":0},{\"tax\":0},{\"tax\":1000.00}]"));
-        assertTrue(out.toString().contains("[{\"tax\": 0.00},{\"tax\": 0.00},{\"tax\": 0.00}]"));
-        assertTrue(out.toString().contains("[{\"tax\": 0.00},{\"tax\": 0.00},{\"tax\": 0.00},{\"tax\": 10000.00}]"));
+        assertTrue(out.toString().contains("[{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00}]"));
+        assertTrue(out.toString().contains("[{\"tax\":0.00},{\"tax\":10000.00},{\"tax\":0.00}]"));
+        assertTrue(out.toString().contains("[{\"tax\":0.00},{\"tax\":0.00},{\"tax\":1000.00}]"));
+        assertTrue(out.toString().contains("[{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00}]"));
+        assertTrue(out.toString().contains("[{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":10000.00}]"));
         assertTrue(out.toString()
-                .contains("[{\"tax\": 0.00},{\"tax\": 0.00},{\"tax\": 0.00},{\"tax\": 0.00},{\"tax\": 3000.00}]"));
+                .contains("[{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":3000.00}]"));
         assertTrue(out.toString().contains(
-                "[{\"tax\":0.00}, {\"tax\":0.00}, {\"tax\":0.00}, {\"tax\":0.00}, {\"tax\":3000.00},{\"tax\":0.00}, {\"tax\":0.00}, {\"tax\":3700.00}, {\"tax\":0.00}]"));
+                "[{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":3000.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":3700.00},{\"tax\":0.00}]"));
         assertTrue(out.toString().contains("[{\"tax\":0.00},{\"tax\":80000.00},{\"tax\":0.00},{\"tax\":60000.00}]"));
         assertTrue(out.toString().contains(
-                "[{\"tax\":0},{\"tax\":0},{\"tax\":0},{\"tax\":0},{\"tax\":0},{\"tax\":0},{\"tax\":1000},{\"tax\":2400}]"));
+                "[{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":1000.00},{\"tax\":2400.00}]"));
 
     }
 }
