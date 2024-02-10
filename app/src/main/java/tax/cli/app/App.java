@@ -25,6 +25,7 @@ public class App {
         BigDecimal weightedAverage = BigDecimal.ZERO;
         BigDecimal losses = BigDecimal.ZERO;
         for (StockMarketOperation operation : operations) {
+            System.out.println("-----------------------------------");
             if (operation.operation().equals(BUY_OPERATION)) {
                 var currentStockQuantity = stockQuantity;
                 var newStockQuantity = currentStockQuantity.add(operation.quantity());
@@ -47,13 +48,14 @@ public class App {
                     System.out.println("Loss of $ " + losses + ": no tax");
                     taxes.add(new Tax(BigDecimal.ZERO));
                 } else {
-                    if (ammount.compareTo(TAX_MIN_AMOUNT) < 0) {
-                        System.out.println("Total amount less than $ 20,000");
+                    if (ammount.compareTo(TAX_MIN_AMOUNT) <= 0) {
+                        System.out.println("Total amount less than or equal to $ 20,000");
                         taxes.add(new Tax(BigDecimal.ZERO));
                         continue;
                     }
                     losses = losses.subtract(profit);
-                    System.out.println(String.format("Profit of $ %s, losses: %s", profit, losses));
+                    System.out
+                            .println(String.format("Profit of $ %s, losses: %s, ammount:%s", profit, losses, ammount));
                     if (losses.floatValue() > 0) {
                         taxes.add(new Tax(BigDecimal.ZERO));
                     } else {
@@ -78,9 +80,8 @@ public class App {
                 System.out.println(objectMapper.writeValueAsString(taxes));
                 line = reader.readLine();
             }
-            System.out.println("Finished reading from stdin");
         } catch (IOException e) {
-            System.out.println("Error reading from stdin");
+            e.printStackTrace();
         }
 
     }
