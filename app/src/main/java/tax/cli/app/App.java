@@ -25,18 +25,14 @@ public class App {
         BigDecimal weightedAverage = BigDecimal.ZERO;
         BigDecimal losses = BigDecimal.ZERO;
         for (StockMarketOperation operation : operations) {
-            System.out.println("-----------------------------------");
             if (operation.operation().equals(BUY_OPERATION)) {
                 var currentStockQuantity = stockQuantity;
-                var newStockQuantity = currentStockQuantity.add(operation.quantity());
-                stockQuantity = newStockQuantity;
-                System.out.println("Buying stocks do not pay taxes");
+                stockQuantity = currentStockQuantity.add(operation.quantity());
                 taxes.add(new Tax(BigDecimal.ZERO));
                 weightedAverage = ((weightedAverage.multiply(currentStockQuantity))
                         .add(
                                 operation.unitCost().multiply(operation.quantity())))
-                        .divide(newStockQuantity);
-                System.out.println("weighted Avg: " + weightedAverage);
+                        .divide(stockQuantity);
             } else if (operation.operation().equals(SELL_OPERATION)) {
                 stockQuantity = stockQuantity.subtract(operation.quantity());
                 var quantity = (operation.quantity());
@@ -45,17 +41,13 @@ public class App {
 
                 if (profit.floatValue() < 0) {
                     losses = losses.add(profit.abs());
-                    System.out.println("Loss of $ " + losses + ": no tax");
                     taxes.add(new Tax(BigDecimal.ZERO));
                 } else {
                     if (ammount.compareTo(TAX_MIN_AMOUNT) <= 0) {
-                        System.out.println("Total amount less than or equal to $ 20,000");
                         taxes.add(new Tax(BigDecimal.ZERO));
                         continue;
                     }
                     losses = losses.subtract(profit);
-                    System.out
-                            .println(String.format("Profit of $ %s, losses: %s, ammount:%s", profit, losses, ammount));
                     if (losses.floatValue() > 0) {
                         taxes.add(new Tax(BigDecimal.ZERO));
                     } else {
