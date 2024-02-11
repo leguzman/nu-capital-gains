@@ -11,6 +11,15 @@ Please install the requirements below, [sdkman](https://sdkman.io) is recommende
 
 To run this app:
 
+Jar:
+
+```bash
+./gradlew build jar
+java -jar app/build/libs/app.jar
+```
+
+Using Gradle:
+
 ```bash
     ./gradlew build run --console=plain
 ```
