@@ -6,6 +6,7 @@ package tax.cli.app;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,21 +30,19 @@ public class App {
                 var currentStockQuantity = stockQuantity;
                 stockQuantity = currentStockQuantity.add(operation.quantity());
                 taxes.add(new Tax(BigDecimal.ZERO));
-                weightedAverage = ((weightedAverage.multiply(currentStockQuantity))
-                        .add(
-                                operation.unitCost().multiply(operation.quantity())))
-                        .divide(stockQuantity);
+                weightedAverage = getWeightedAverage(operation, weightedAverage, currentStockQuantity,
+                        stockQuantity);
             } else if (operation.operation().equals(SELL_OPERATION)) {
                 stockQuantity = stockQuantity.subtract(operation.quantity());
                 var quantity = (operation.quantity());
-                var ammount = quantity.multiply(operation.unitCost());
-                var profit = ammount.subtract(weightedAverage.multiply(quantity));
+                var amount = quantity.multiply(operation.unitCost());
+                var profit = amount.subtract(weightedAverage.multiply(quantity));
 
                 if (profit.floatValue() < 0) {
                     losses = losses.add(profit.abs());
                     taxes.add(new Tax(BigDecimal.ZERO));
                 } else {
-                    if (ammount.compareTo(TAX_MIN_AMOUNT) <= 0) {
+                    if (amount.compareTo(TAX_MIN_AMOUNT) <= 0) {
                         taxes.add(new Tax(BigDecimal.ZERO));
                         continue;
                     }
@@ -51,13 +50,21 @@ public class App {
                     if (losses.floatValue() > 0) {
                         taxes.add(new Tax(BigDecimal.ZERO));
                     } else {
-                        taxes.add(new Tax(losses.abs().divide(BigDecimal.valueOf(5))));
+                        taxes.add(new Tax(losses.abs().divide(BigDecimal.valueOf(5), 2, RoundingMode.HALF_UP)));
                         losses = BigDecimal.ZERO;
                     }
                 }
             }
         }
         return taxes;
+    }
+
+    private static BigDecimal getWeightedAverage(StockMarketOperation operation, BigDecimal weightedAverage,
+            BigDecimal currentStockQuantity, BigDecimal stockQuantity) {
+        return ((weightedAverage.multiply(currentStockQuantity))
+                .add(
+                        operation.unitCost().multiply(operation.quantity())))
+                .divide(stockQuantity, 2, RoundingMode.HALF_UP);
     }
 
     public static void main(String[] args) {
