@@ -6,22 +6,22 @@ CLI application for calculating taxes.
 
 Please install the requirements below, [sdkman](https://sdkman.io) is recommended for this task:
 
-    Java 21 (Temurin)  sdk install java 17.0.0-tem
+    Java 21 (Temurin)  sdk install java 21.0.0-tem
     Gradle 8.5  sdk install gradle 8.5
 
 To run this app:
 
-Jar:
+## JAR:
 
-```bash
+```
 ./gradlew build jar
 java -jar app/build/libs/app.jar
 ```
 
-Using Gradle:
+## Using Gradle:
 
-```bash
-    ./gradlew build run --console=plain
+```
+./gradlew build run --console=plain
 ```
 
 Console will be ready to receive input once `>Task :app:build` or `>Task :app:run` is prompted.
