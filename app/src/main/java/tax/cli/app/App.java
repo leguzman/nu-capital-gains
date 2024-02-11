@@ -5,78 +5,23 @@ package tax.cli.app;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import tax.cli.app.Records.StockMarketOperation;
-import tax.cli.app.Records.Tax;
 
 public class App {
-    public static final BigDecimal TAX_MIN_AMOUNT = BigDecimal.valueOf(20000);
-    public static final String BUY_OPERATION = "buy";
-    public static final String SELL_OPERATION = "sell";
-
-    public static List<Tax> processOperations(StockMarketOperation[] operations) {
-        var taxes = new ArrayList<Tax>();
-        BigDecimal stockQuantity = BigDecimal.ZERO;
-        BigDecimal weightedAverage = BigDecimal.ZERO;
-        BigDecimal losses = BigDecimal.ZERO;
-        for (StockMarketOperation operation : operations) {
-            if (operation.operation().equals(BUY_OPERATION)) {
-                var currentStockQuantity = stockQuantity;
-                stockQuantity = currentStockQuantity.add(operation.quantity());
-                taxes.add(new Tax(BigDecimal.ZERO));
-                weightedAverage = getWeightedAverage(operation, weightedAverage, currentStockQuantity,
-                        stockQuantity);
-            } else if (operation.operation().equals(SELL_OPERATION)) {
-                stockQuantity = stockQuantity.subtract(operation.quantity());
-                var quantity = (operation.quantity());
-                var amount = quantity.multiply(operation.unitCost());
-                var profit = amount.subtract(weightedAverage.multiply(quantity));
-
-                if (profit.floatValue() < 0) {
-                    losses = losses.add(profit.abs());
-                    taxes.add(new Tax(BigDecimal.ZERO));
-                } else {
-                    if (amount.compareTo(TAX_MIN_AMOUNT) <= 0) {
-                        taxes.add(new Tax(BigDecimal.ZERO));
-                        continue;
-                    }
-                    losses = losses.subtract(profit);
-                    if (losses.floatValue() > 0) {
-                        taxes.add(new Tax(BigDecimal.ZERO));
-                    } else {
-                        taxes.add(new Tax(losses.abs().divide(BigDecimal.valueOf(5), 2, RoundingMode.HALF_UP)));
-                        losses = BigDecimal.ZERO;
-                    }
-                }
-            }
-        }
-        return taxes;
-    }
-
-    private static BigDecimal getWeightedAverage(StockMarketOperation operation, BigDecimal weightedAverage,
-            BigDecimal currentStockQuantity, BigDecimal stockQuantity) {
-        return ((weightedAverage.multiply(currentStockQuantity))
-                .add(
-                        operation.unitCost().multiply(operation.quantity())))
-                .divide(stockQuantity, 2, RoundingMode.HALF_UP);
-    }
 
     public static void main(String[] args) {
-
         ObjectMapper objectMapper = new ObjectMapper();
-        // read from stdin
         try (BufferedReader reader = new BufferedReader(new java.io.InputStreamReader(System.in))) {
             var line = reader.readLine();
+            OperationProcessor processor = new OperationProcessor();
             while (!line.isEmpty()) {
                 StockMarketOperation[] operations = objectMapper.readValue(line, StockMarketOperation[].class);
-                var taxes = processOperations(operations);
+                var taxes = processor.processOperations(operations);
                 System.out.println(objectMapper.writeValueAsString(taxes));
+                processor.reset();
                 line = reader.readLine();
             }
         } catch (IOException e) {
