@@ -3,11 +3,15 @@
  */
 package tax.cli.app;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import tax.cli.app.Records.StockMarketOperation;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static tax.cli.app.App.main;
 
@@ -25,7 +29,8 @@ class AppTest {
                                                 [{"operation":"buy", "unit-cost":10.00, "quantity": 10000},{"operation":"sell", "unit-cost":2.00, "quantity": 5000},{"operation":"sell", "unit-cost":20.00, "quantity": 2000},{"operation":"sell", "unit-cost":20.00, "quantity": 2000},{"operation":"sell", "unit-cost":25.00, "quantity": 1000},{"operation":"buy", "unit-cost":20.00, "quantity": 10000},{"operation":"sell", "unit-cost":15.00, "quantity": 5000},{"operation":"sell", "unit-cost":30.00, "quantity": 4350},{"operation":"sell", "unit-cost":30.00, "quantity": 650}]
                                                 [{"operation":"buy", "unit-cost":10.00, "quantity": 10000},{"operation":"sell", "unit-cost":50.00, "quantity": 10000},{"operation":"buy", "unit-cost":20.00, "quantity": 10000},{"operation":"sell", "unit-cost":50.00, "quantity": 10000}]
                                                 [{"operation":"buy", "unit-cost": 5000.00, "quantity": 10},{"operation":"sell", "unit-cost": 4000.00, "quantity": 5},{"operation":"buy", "unit-cost": 15000.00, "quantity": 5},{"operation":"buy", "unit-cost": 4000.00, "quantity": 2},{"operation":"buy", "unit-cost": 23000.00, "quantity": 2},{"operation":"sell", "unit-cost": 20000.00, "quantity": 1},{"operation":"sell", "unit-cost": 12000.00, "quantity": 10},{"operation":"sell", "unit-cost": 15000.00, "quantity": 3}]
-
+                                                [{"operation":"buy", "unit-cost":10, "quantity": 10000}, {"operation":"sell", "unit-cost":20, "quantity": 11000}]
+                                                
                                                 """
                                                 .getBytes()));
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -48,5 +53,34 @@ class AppTest {
                 assertTrue(out.toString().contains(
                                 "[{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":0.00},{\"tax\":1000.00},{\"tax\":2400.00}]"));
 
+                assertTrue(out.toString().contains("[{\"tax\":0.00},{\"error\":\"Can't sell more stocks than you have\"}]"));
+
+
         }
+
+        @Test
+        void testOverSell() throws JsonProcessingException {
+                ObjectMapper objectMapper = new ObjectMapper();
+                OperationProcessor processor = new OperationProcessor();
+                StockMarketOperation[] operations = objectMapper.readValue("""
+                    [{"operation":"buy", "unit-cost":10.00, "quantity": 10000},{"operation":"sell", "unit-cost":20.00, "quantity": 5000},{"operation":"sell", "unit-cost":5.00, "quantity": 5000}]
+                    
+                    """, StockMarketOperation[].class);
+                var taxes = processor.processOperations(operations);
+                var result = objectMapper.writeValueAsString(taxes);
+                assertTrue(result.contains("[{\"tax\":0.00},{\"tax\":10000.00},{\"tax\":0.00}]"));
+        }
+        @Test
+        void testOverSell2() throws JsonProcessingException {
+                ObjectMapper objectMapper = new ObjectMapper();
+                OperationProcessor processor = new OperationProcessor();
+                StockMarketOperation[] operations = objectMapper.readValue("""
+                    [{"operation":"buy", "unit-cost":10, "quantity": 10000}, {"operation":"sell", "unit-cost":20, "quantity": 11000}]
+                    
+                    """, StockMarketOperation[].class);
+                var taxes = processor.processOperations(operations);
+                var result = objectMapper.writeValueAsString(taxes);
+                assertTrue(result.contains("[{\"tax\":0.00},{\"error\":\"Can't sell more stocks than you have\"}]"));
+        }
+
 }

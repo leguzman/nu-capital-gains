@@ -16,34 +16,41 @@ public class OperationProcessor {
     public static final String BUY_OPERATION = "buy";
     public static final String SELL_OPERATION = "sell";
     private final List<Tax> taxes = new ArrayList<>();
+    private final List<Object> response = new ArrayList<>();
     private BigDecimal stockQuantity = BigDecimal.ZERO;
     private BigDecimal weightedAverage = BigDecimal.ZERO;
     private BigDecimal losses = BigDecimal.ZERO;
 
     public void reset() {
-        taxes.clear();
+        response.clear();
         stockQuantity = BigDecimal.ZERO;
         weightedAverage = BigDecimal.ZERO;
         losses = BigDecimal.ZERO;
     }
 
-    public List<Tax> processOperations(StockMarketOperation[] operations) {
+    public List<Object> processOperations(StockMarketOperation[] operations) {
         for (StockMarketOperation operation : operations) {
             if (operation.operation().equals(BUY_OPERATION)) {
                 var currentStockQuantity = stockQuantity;
                 stockQuantity = currentStockQuantity.add(operation.quantity());
-                taxes.add(new Tax(BigDecimal.ZERO));
+                response.add(new Tax(BigDecimal.ZERO));
                 weightedAverage = calculateWeightedAverage(operation, weightedAverage, currentStockQuantity,
                         stockQuantity);
             } else if (operation.operation().equals(SELL_OPERATION)) {
                 processSellOperation(operation);
             }
         }
-        return taxes;
+        return response;
     }
 
     private void processSellOperation(StockMarketOperation operation) {
+       if(stockQuantity.compareTo(operation.quantity()) < 0){
+           response.add(new Records.Error("Can't sell more stocks than you have"));
+           return;
+       }
+
         stockQuantity = stockQuantity.subtract(operation.quantity());
+
         var amount = operation.quantity().multiply(operation.unitCost());
         var profit = amount.subtract(weightedAverage.multiply(operation.quantity()));
 
@@ -56,12 +63,12 @@ public class OperationProcessor {
 
     private void processLoss(BigDecimal profit) {
         losses = losses.add(profit.abs());
-        taxes.add(new Tax(BigDecimal.ZERO));
+        response.add(new Tax(BigDecimal.ZERO));
     }
 
     private void processProfit(BigDecimal amount, BigDecimal profit) {
         if (amount.compareTo(TAX_MIN_AMOUNT) <= 0) {
-            taxes.add(new Tax(BigDecimal.ZERO));
+            response.add(new Tax(BigDecimal.ZERO));
         } else {
             calculateTaxesAndLosses(profit);
         }
@@ -70,9 +77,9 @@ public class OperationProcessor {
     private void calculateTaxesAndLosses(BigDecimal profit) {
         losses = losses.subtract(profit);
         if (losses.floatValue() > 0) {
-            taxes.add(new Tax(BigDecimal.ZERO));
+            response.add(new Tax(BigDecimal.ZERO));
         } else {
-            taxes.add(new Tax(losses.abs().divide(BigDecimal.valueOf(5), DEFAULT_SCALE, DEFAULT_ROUNDING_MODE)));
+            response.add(new Tax(losses.abs().divide(BigDecimal.valueOf(5), DEFAULT_SCALE, DEFAULT_ROUNDING_MODE)));
             losses = BigDecimal.ZERO;
         }
     }

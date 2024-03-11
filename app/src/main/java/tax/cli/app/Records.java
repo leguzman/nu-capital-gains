@@ -11,6 +11,8 @@ public class Records {
     public record StockMarketOperation(String operation, @JsonAlias("unit-cost") BigDecimal unitCost,
             BigDecimal quantity) {
     }
+    public record Error (String error) {
+    }
 
     public record Tax(BigDecimal tax) {
         public Tax(BigDecimal tax) {
